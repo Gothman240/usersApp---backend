@@ -1,6 +1,7 @@
 package com.backend.usersapp.backendusersapp.auth;
 
 import com.backend.usersapp.backendusersapp.auth.filters.JwtAuthentiacionFilter;
+import com.backend.usersapp.backendusersapp.auth.filters.JwtValidationFilter;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -32,6 +33,7 @@ public class SpringSecurityConfig {
         httpSecurity.authorizeHttpRequests( req -> req.requestMatchers( HttpMethod.GET, "/users" ).permitAll()
                         .anyRequest().authenticated()
                 ).addFilter( new JwtAuthentiacionFilter( authenticationConfiguration.getAuthenticationManager() ) )
+                .addFilter( new JwtValidationFilter( authenticationConfiguration.getAuthenticationManager() ) )
                 .csrf( config -> config.disable() )
                 .sessionManagement( management -> management.sessionCreationPolicy( SessionCreationPolicy.STATELESS ) );
         return httpSecurity.build();
