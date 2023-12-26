@@ -2,6 +2,7 @@ package com.backend.usersapp.backendusersapp.auth.filters;
 
 import com.backend.usersapp.backendusersapp.models.entities.User;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import io.jsonwebtoken.Jwts;
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
@@ -15,7 +16,7 @@ import static com.backend.usersapp.backendusersapp.auth.TokenJwtConfig.*;
 
 
 import java.io.IOException;
-import java.util.Base64;
+import java.util.Date;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -49,8 +50,9 @@ public class JwtAuthentiacionFilter extends UsernamePasswordAuthenticationFilter
     protected void successfulAuthentication( HttpServletRequest request, HttpServletResponse response, FilterChain chain, Authentication authResult ) throws IOException, ServletException {
         String username = ((org.springframework.security.core.userdetails.User) authResult.getPrincipal()).getUsername();
 
-        String originalInput = SECRET_KEY + "." + username;
-        String token = Base64.getEncoder().encodeToString( originalInput.getBytes() );
+//        String originalInput = SECRET_KEY + "." + username;
+        String token = Jwts.builder().subject( username ).signWith( SECRET_KEY )
+                .issuedAt( new Date() ).expiration( new Date(System.currentTimeMillis() + 3600000) ).compact();
 
         response.addHeader( HEADER_AUTHORIZATION, PREFIX_TOKEN + token );
         Map<String, Object> body = new HashMap<>();
