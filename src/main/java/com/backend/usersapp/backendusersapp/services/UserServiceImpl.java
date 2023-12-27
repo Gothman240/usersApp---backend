@@ -2,6 +2,7 @@ package com.backend.usersapp.backendusersapp.services;
 
 import com.backend.usersapp.backendusersapp.models.entities.Role;
 import com.backend.usersapp.backendusersapp.models.entities.User;
+import com.backend.usersapp.backendusersapp.models.request.UserRequest;
 import com.backend.usersapp.backendusersapp.repositories.RoleRepository;
 import com.backend.usersapp.backendusersapp.repositories.UserRepository;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -53,7 +54,7 @@ public class UserServiceImpl implements UserService {
 
     @Override
     @Transactional
-    public Optional<User> update(User user, Long id) {
+    public Optional<User> update( UserRequest user, Long id) {
         Optional<User> optionalUser = this.findById(id);
         if (optionalUser.isPresent()) {
             User userDb = optionalUser.orElseThrow();

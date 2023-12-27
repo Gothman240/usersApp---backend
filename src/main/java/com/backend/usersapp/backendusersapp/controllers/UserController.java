@@ -1,6 +1,7 @@
 package com.backend.usersapp.backendusersapp.controllers;
 
 import com.backend.usersapp.backendusersapp.models.entities.User;
+import com.backend.usersapp.backendusersapp.models.request.UserRequest;
 import com.backend.usersapp.backendusersapp.services.UserService;
 import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -43,7 +44,7 @@ public class UserController {
     }
 
     @PutMapping("/{id}")
-    public ResponseEntity<?> update(@Valid @RequestBody User user, BindingResult result, @PathVariable Long id){
+    public ResponseEntity<?> update( @Valid @RequestBody UserRequest user, BindingResult result, @PathVariable Long id){
         if (result.hasErrors()) {
             return validation(result);
         }
