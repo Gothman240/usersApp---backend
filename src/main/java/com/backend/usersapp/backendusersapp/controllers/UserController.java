@@ -1,5 +1,6 @@
 package com.backend.usersapp.backendusersapp.controllers;
 
+import com.backend.usersapp.backendusersapp.models.dto.UserDto;
 import com.backend.usersapp.backendusersapp.models.entities.User;
 import com.backend.usersapp.backendusersapp.models.request.UserRequest;
 import com.backend.usersapp.backendusersapp.services.UserService;
@@ -22,12 +23,12 @@ public class UserController {
     @Autowired
     private UserService userService;
     @GetMapping
-    public List<User> list(){
+    public List<UserDto> list(){
         return userService.findAll();
     }
     @GetMapping("/{id}")
     public ResponseEntity<?> show(@PathVariable Long id){
-        Optional<User> optionalUser = userService.findById(id);
+        Optional<UserDto> optionalUser = userService.findById(id);
 
         if (optionalUser.isPresent()) {
             return ResponseEntity.ok(optionalUser.orElseThrow());
@@ -48,7 +49,7 @@ public class UserController {
         if (result.hasErrors()) {
             return validation(result);
         }
-        Optional<User> optionalUser = userService.update(user, id);
+        Optional<UserDto> optionalUser = userService.update(user, id);
         if (optionalUser.isPresent()) {
             return ResponseEntity.status(HttpStatus.CREATED).body(optionalUser.orElseThrow());
         }
@@ -57,7 +58,7 @@ public class UserController {
 
     @DeleteMapping("/{id}")
     public ResponseEntity<?> delete(@PathVariable Long id){
-        Optional<User> optionalUser = userService.findById(id);
+        Optional<UserDto> optionalUser = userService.findById(id);
         if (optionalUser.isPresent()) {
             userService.remove(id);
             return ResponseEntity.noContent().build(); //204
