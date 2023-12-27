@@ -6,6 +6,8 @@ import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotEmpty;
 import jakarta.validation.constraints.Size;
 
+import java.util.List;
+
 @Entity
 @Table(name = "users")
 public class User {
@@ -23,6 +25,17 @@ public class User {
     @Email
     private String email;
 
+    /* Tabla intermedia
+    * Unique NO deja que el usuario tenga el role 2 veces
+    * */
+    @ManyToMany(fetch = FetchType.EAGER)
+    @JoinTable(name = "users_roles",
+            joinColumns = @JoinColumn(name = "user_id"),
+            inverseJoinColumns = @JoinColumn(name = "role_id"),
+            uniqueConstraints = { @UniqueConstraint(columnNames = { "user_id", "role_id" }) }
+    )
+    private List<Role> roles;
+
     public Long getId() {
         return id;
     }
@@ -31,7 +44,7 @@ public class User {
         return username;
     }
 
-    public void setUsername(String username) {
+    public void setUsername( String username ) {
         this.username = username;
     }
 
@@ -39,7 +52,7 @@ public class User {
         return password;
     }
 
-    public void setPassword(String password) {
+    public void setPassword( String password ) {
         this.password = password;
     }
 
@@ -47,7 +60,15 @@ public class User {
         return email;
     }
 
-    public void setEmail(String email) {
+    public void setEmail( String email ) {
         this.email = email;
+    }
+
+    public List<Role> getRoles() {
+        return roles;
+    }
+
+    public void setRoles( List<Role> roles ) {
+        this.roles = roles;
     }
 }

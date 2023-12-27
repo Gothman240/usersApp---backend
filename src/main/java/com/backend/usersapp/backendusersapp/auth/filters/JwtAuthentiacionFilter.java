@@ -2,6 +2,8 @@ package com.backend.usersapp.backendusersapp.auth.filters;
 
 import com.backend.usersapp.backendusersapp.models.entities.User;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import io.jsonwebtoken.Claims;
+import io.jsonwebtoken.ClaimsBuilder;
 import io.jsonwebtoken.Jwts;
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
@@ -11,11 +13,13 @@ import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.AuthenticationException;
+import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
 import static com.backend.usersapp.backendusersapp.auth.TokenJwtConfig.*;
 
 
 import java.io.IOException;
+import java.util.Collection;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.Map;
@@ -50,11 +54,25 @@ public class JwtAuthentiacionFilter extends UsernamePasswordAuthenticationFilter
     protected void successfulAuthentication( HttpServletRequest request, HttpServletResponse response, FilterChain chain, Authentication authResult ) throws IOException, ServletException {
         String username = ((org.springframework.security.core.userdetails.User) authResult.getPrincipal()).getUsername();
 
-//        String originalInput = SECRET_KEY + "." + username;
-        String token = Jwts.builder().subject( username ).signWith( SECRET_KEY )
-                .issuedAt( new Date() ).expiration( new Date(System.currentTimeMillis() + 3600000) ).compact();
+        //obteniendo roles
+        Collection<? extends GrantedAuthority> roles = authResult.getAuthorities();
+        boolean isAdmin = roles.stream().anyMatch( role -> role.getAuthority().equals( "ROLE_ADMIN" ) );
+        ClaimsBuilder claims = Jwts.claims();
+        //convirtiendo Object a Json con ObjectMapper
+        claims.add("authorities", new ObjectMapper().writeValueAsString( roles ) );
+        claims.add( "isAdmin", isAdmin );
+        claims.add( "username", username );
+
+        String token = Jwts.builder()
+                .claims( claims.build() )
+                .subject( username )
+                .signWith( SECRET_KEY )
+                .issuedAt( new Date() )
+                .expiration( new Date(System.currentTimeMillis() + 3600000) )
+                .compact();
 
         response.addHeader( HEADER_AUTHORIZATION, PREFIX_TOKEN + token );
+
         Map<String, Object> body = new HashMap<>();
         body.put( "token", token );
         body.put( "message", String.format( "Hola %s, has iniciado sesion con exito!", username ) );

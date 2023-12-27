@@ -1,6 +1,8 @@
 package com.backend.usersapp.backendusersapp.services;
 
+import com.backend.usersapp.backendusersapp.models.entities.Role;
 import com.backend.usersapp.backendusersapp.models.entities.User;
+import com.backend.usersapp.backendusersapp.repositories.RoleRepository;
 import com.backend.usersapp.backendusersapp.repositories.UserRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
@@ -9,12 +11,15 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 @Service
 public class UserServiceImpl implements UserService {
     @Autowired
     private UserRepository userRepository;
+    @Autowired
+    RoleRepository roleRepository;
     @Autowired
     private PasswordEncoder passwordEncoder;
 
@@ -34,6 +39,15 @@ public class UserServiceImpl implements UserService {
     @Transactional
     public User save(User user) {
         user.setPassword( passwordEncoder.encode(user.getPassword()) );
+
+        Optional<Role> optionalRole = roleRepository.findByName( "ROLE_USER" );
+
+        List<Role> roleList = new ArrayList<>();
+
+        if ( optionalRole.isPresent() ) {
+            roleList.add( optionalRole.orElseThrow() );
+        }
+        user.setRoles( roleList );
         return userRepository.save(user);
     }
 

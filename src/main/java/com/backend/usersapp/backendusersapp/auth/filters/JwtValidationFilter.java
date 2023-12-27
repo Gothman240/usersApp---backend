@@ -1,6 +1,8 @@
 package com.backend.usersapp.backendusersapp.auth.filters;
 
 import static com.backend.usersapp.backendusersapp.auth.TokenJwtConfig.*;
+
+import com.backend.usersapp.backendusersapp.auth.SimpleGrantedAuthorityJsonCreator;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.JwtException;
@@ -43,15 +45,19 @@ public class JwtValidationFilter extends BasicAuthenticationFilter {
         try {
             Claims claims = Jwts.parser().verifyWith( (SecretKey) SECRET_KEY ).build().parseSignedClaims( token ).getPayload();
 
+            //roles/auth vienen como Json
+            Object authoritiesClaims = claims.get( "authorities" );
             String username = claims.getSubject();
-
-            List<GrantedAuthority> authorities = new ArrayList<>();
-            authorities.add( new SimpleGrantedAuthority( "ROLE_USER" ) );
+            //se convierten de Json>String>Bytes, por cada uno se mapea a SimpleGAuth
+            Collection<? extends GrantedAuthority> authorities = Arrays
+                    .asList( new ObjectMapper()
+                            .addMixIn( SimpleGrantedAuthority.class, SimpleGrantedAuthorityJsonCreator.class )
+                            .readValue( authoritiesClaims.toString().getBytes(), SimpleGrantedAuthority[].class ) );
 
             UsernamePasswordAuthenticationToken authenticationToken = new UsernamePasswordAuthenticationToken( username, null, authorities );
             SecurityContextHolder.getContext().setAuthentication( authenticationToken );
             chain.doFilter( request, response );
-        }catch (JwtException e){
+        } catch (JwtException e) {
             Map<String, String> body = new HashMap<>();
             body.put( "error", e.getMessage() );
             body.put( "message", "el token no es valido" );
